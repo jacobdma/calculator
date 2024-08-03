@@ -1,0 +1,54 @@
+import re
+
+
+def main():
+    exp = input("Enter your expression: ").replace(" ", "")
+    print(calculator(exp))
+
+def calculate(exp):
+    res = [item for item in re.split(r'((?<=\d)[+\-/*^])', exp) if item]
+
+    operations = [
+        ('^', lambda x, y: x ** y),
+        ('/', lambda x, y: x / y),
+        ('*', lambda x, y: x * y),
+        ('-', lambda x, y: x - y),
+        ('+', lambda x, y: x + y)
+    ]
+
+    for operator, function in operations:
+        while operator in res:
+            index = res.index(operator)
+            res[index - 1: index + 2] = [function(float(res[index - 1]), float(res[index + 1]))]
+
+    return ''.join(map(str, res))
+
+def calculator(expression):
+    result = ""
+    for index, char in enumerate(expression):
+        if char == '(' and index > 0 and expression[index - 1] not in ['*', '/', '+', '-', '^']:
+            result += '*'
+        result += char
+
+    while '(' in result:
+        index = []
+        highest = 0
+        open_count = 0
+
+        for i, value in enumerate(result):
+            if value == '(':
+                open = i
+                open_count += 1
+            elif value == ')':
+                if open_count > highest:
+                    highest = open_count
+                    index = [open, i]
+                open_count -= 1
+
+        value = calculate(result[index[0] + 1: index[1]])
+        result = result[:index[0]] + value + result[index[1] + 1:]    
+    return calculate(result)
+
+
+if __name__ == "__main__":
+    main()
